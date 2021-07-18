@@ -36,11 +36,13 @@ type Field = (
   {
     kind: "LIST";
     name: string;
-    subfields: Field[];
+    // subfields: Field[];
+    subobjects: RawObject[];
   }
 );
 
 type RawEntry = [string, any];
+type RawObject = RawEntry[];
 type EditEntry = {
   value: RawEntry;
   setter: RawEntry;
@@ -49,8 +51,10 @@ type Entry = RawEntry | EditEntry;
 type EntryKind = "raw" | "edit";
 
 type EntryTransMiddleware = (entries: Entry[])=>Entry[];
-type FieldGenMiddleware = (entry: Entry, generateField: (entry: Entry)=>Field | undefined)=>Field | undefined;
-type ComponentGenMiddleware = (field: Field, generateComponent: (field: Field)=>React.FC | undefined)=>React.FC | undefined;
+type FieldGenMiddleware = (entry: Entry, generateField: (entry: Entry)=>Field)=>Field | undefined;
+type ComponentGenMiddleware = (field: Field, generateComponent: (field: Field)=>React.FC)=>React.FC | undefined;
+
+let rawObjectToComponent: (rawObject: RawObject)=>React.FC;
 
 const entryKind = (entry: Entry): EntryKind => Array.isArray(entry) ? "raw" : "edit";
 
@@ -112,7 +116,7 @@ const eventName = (name: string): string | undefined => {
     }
   }
 
-  return undefined;
+  return;
 };
 
 
@@ -167,7 +171,7 @@ const entryTransMiddlewares: EntryTransMiddleware[] = [
                 } as EditEntry;
               }
 
-              return undefined;
+              return;
             }
           ),
           r.filter((a: any) => a != null)
@@ -197,7 +201,7 @@ const entryTransMiddlewares: EntryTransMiddleware[] = [
     const entriesByKind = {
       raw: [],
       edit: [],
-      ...r.group(entryKind, entries)
+      ...r.groupBy(entryKind, entries)
     };
 
     // Only raw entries are taken by the actual middleware implementation.
@@ -211,14 +215,17 @@ const entryTransMiddlewares: EntryTransMiddleware[] = [
 const fieldGenMiddlewares: FieldGenMiddleware[] = [
   // Generate EDIT_STRING.
   (entry: Entry) => {
-    if (entryKind(entry) !== "edit") { return undefined; }
+    if (entryKind(entry) !== "edit") { return; }
 
+    console.log(entryKind(entry));
+    // @ts-ignore
+    console.log(';;;', entry, entry.value);
     const {
       value: [valueName, valueValue],
       setter: [setterName, setterValue],
     } = entry as EditEntry;
 
-    if (typeof valueValue !== "string") { return undefined; }
+    if (typeof valueValue !== "string") { return; }
 
     return {
       kind: "EDIT_STRING",
@@ -232,14 +239,14 @@ const fieldGenMiddlewares: FieldGenMiddleware[] = [
 
   // Generate EDIT_INTEGER.
   (entry: Entry) => {
-    if (entryKind(entry) !== "edit") { return undefined; }
+    if (entryKind(entry) !== "edit") { return; }
 
     const {
       value: [valueName, valueValue],
       setter: [setterName, setterValue],
     } = entry as EditEntry;
 
-    if (!(typeof valueValue === "number" && Number.isInteger(valueValue))) { return undefined; }
+    if (!(typeof valueValue === "number" && Number.isInteger(valueValue))) { return; }
 
     return {
       kind: "EDIT_INTEGER",
@@ -253,11 +260,11 @@ const fieldGenMiddlewares: FieldGenMiddleware[] = [
 
   // Generate RENDER_STRING for string or number value.
   (entry: Entry) => {
-    if (entryKind(entry) !== "raw") { return undefined; }
+    if (entryKind(entry) !== "raw") { return; }
 
     const [name, value] = entry as RawEntry;
 
-    if (!(typeof value === "string" || typeof value === "number")) { return undefined; }
+    if (!(typeof value === "string" || typeof value === "number")) { return; }
 
     return {
       kind: "RENDER_STRING",
@@ -268,11 +275,11 @@ const fieldGenMiddlewares: FieldGenMiddleware[] = [
 
   // Generate RENDER_STRING for Date value.
   (entry: Entry) => {
-    if (entryKind(entry) !== "raw") { return undefined; }
+    if (entryKind(entry) !== "raw") { return; }
 
     const [name, value] = entry as RawEntry;
 
-    if (!(value instanceof Date)) { return undefined; }
+    if (!(value instanceof Date)) { return; }
 
     return {
       kind: "RENDER_STRING",
@@ -283,11 +290,11 @@ const fieldGenMiddlewares: FieldGenMiddleware[] = [
 
   // Generate BUTTON for function value.
   (entry: Entry) => {
-    if (entryKind(entry) !== "raw") { return undefined; }
+    if (entryKind(entry) !== "raw") { return; }
 
     const [name, value] = entry as RawEntry;
 
-    if (!(typeof value !== "function")) { return undefined; }
+    if (typeof value !== "function") { return; }
 
     return {
       kind: "BUTTON",
@@ -298,31 +305,89 @@ const fieldGenMiddlewares: FieldGenMiddleware[] = [
 
   // Generate LIST for list(js array) value.
   (entry: Entry, generateField) => {
-    if (entryKind(entry) !== "raw") { return undefined; }
+    if (entryKind(entry) !== "raw") { return; }
 
     const [name, value] = entry as RawEntry;
 
-    if (!Array.isArray(value)) { return undefined; }
+    if (!Array.isArray(value)) { return; }
 
     return {
       kind: "LIST",
       name,
-      subfields: value.map(generateField),
+      subobjects: value.map(a => Object.entries(a)),
+      // subfields: value.map(generateField),
     } as Field;
   },
 ];
 
 const componentGenMiddlewares: ComponentGenMiddleware[] = [
   // Generate EDIT_STRING component.
+  (field) => {
+    if (field.kind !== "EDIT_STRING") { return; }
 
+    return ()=><input
+      type={"text"}
+      value={field.value}
+      onChange={e => {
+        field.setter(e.target.value);
+      }}
+      placeholder={field.name}
+    />;
+  },
 
   // Generate EDIT_INTEGER component.
+  (field) => {
+    if (field.kind !== "EDIT_INTEGER") { return; }
+
+    return ()=><input
+        type={"number"}
+        value={field.value.toString()}
+        onChange={e => {
+          const value = e.target.value;
+
+          const numberValue = Number(value);
+          if (Number.isNaN(numberValue))
+          {
+            field.setter(field.value);
+            return;
+          }
+
+          field.setter(numberValue);
+        }}
+        placeholder={field.name}
+    />;
+  },
 
   // Generate RENDER_STRING component.
+  (field) => {
+    if (field.kind !== "RENDER_STRING") { return; }
+
+    return ()=><span>{field.value}</span>;
+  },
 
   // Generate BUTTON component.
+  (field) => {
+    if (field.kind !== "BUTTON") { return; }
+
+    return ()=><input type={"button"} onClick={field.event} value={field.name}/>;
+  },
 
   // Generate LIST component.
+  (field, generateComponent) => {
+    if (field.kind !== "LIST") { return; }
+
+    // Define container.
+    const Container = ({children}: {children: any}) => <div style={{display: "inline-block"}}>{children}</div>;
+
+    // Generate components for the fields.
+    const components: React.FC[] = field.subobjects.map(rawObjectToComponent);
+    // const components: React.FC[] = field.subfields.map(generateComponent);
+
+    // Make them into one component, and response.
+    return ()=><div style={{display: "inline-block"}}>
+      {components.map(C => <Container><C/></Container>)}
+    </div>;
+  },
 ];
 
 
@@ -452,27 +517,130 @@ const FieldComponent = (p: {field: Field}) => {
   </div>;
 };
 
-const GeneralComponent = (p: Record<string, any>) => {
-  const fieldsWithNormalizedName = r.map(
-    ([key, value]: [string, any]) => [fromCamelCase(key), value],
-    Object.entries(p)
+// const GeneralComponent2 = (p: Record<string, any>) => {
+//   const fieldsWithNormalizedName = r.map(
+//     ([key, value]: [string, any]) => [fromCamelCase(key), value],
+//     Object.entries(p)
+//   );
+//
+//   const entries = convertEditEntries(fieldsWithNormalizedName);
+//
+//   const fields: Field[] = entries.map(entryToField);
+//
+//   return <div style={{border: "1px solid black", borderRadius: "8px", display: "inline-block"}}>
+//     {fields.map(
+//       (field: Field) => <FieldComponent key={field.name} field={field}/>
+//     )}
+//   </div>;
+// };
+
+const transformEntries = (middlewares: EntryTransMiddleware[], entries: Entry[]): Entry[] => {
+  const reducer = (entries: Entry[], middleware: EntryTransMiddleware): Entry[] => {
+    return middleware(entries);
+  };
+  return r.reduce(
+    reducer,
+    entries,
+    middlewares
   );
+};
 
-  const entries = convertEditEntries(fieldsWithNormalizedName);
+const generateFields = (middlewares: FieldGenMiddleware[], entries: Entry[]): Field[] => {
+  let entryToField: (entry: Entry)=>Field;
+  const entryToFieldImpl = (entry: Entry, leftMiddlewares: FieldGenMiddleware[]): Field => {
+    if (leftMiddlewares.length === 0)
+    {
+      console.error(entry);
+      throw new Error('Cannot convert entry to field.');
+    }
 
-  const fields: Field[] = entries.map(entryToField);
+    const [cur, ...extra] = leftMiddlewares;
 
-  return <div style={{border: "1px solid black", borderRadius: "8px", display: "inline-block"}}>
-    {fields.map(
-      (field: Field) => <FieldComponent key={field.name} field={field}/>
-    )}
+    const maybeField = cur(entry, entryToField);
+
+    if (maybeField != null) { return maybeField; }
+    else { return entryToFieldImpl(entry, extra); }
+  };
+  entryToField = (entry: Entry)=>entryToFieldImpl(entry, middlewares);
+
+
+  const fields = r.map(entryToField, entries);
+
+  return fields;
+};
+
+const generateComponents = (middlewares: ComponentGenMiddleware[], fields: Field[]): React.FC[] => {
+  let fieldToComponent: (field: Field)=>React.FC;
+  const fieldToComponentImpl = (field: Field, leftMiddlewares: ComponentGenMiddleware[]): React.FC => {
+    if (leftMiddlewares.length === 0)
+    {
+      console.error(field);
+      throw new Error('Cannot convert field to component.');
+    }
+
+    const [cur, ...extra] = leftMiddlewares;
+
+    const maybeComponent = cur(field, fieldToComponent);
+
+    if (maybeComponent != null) { return maybeComponent; }
+    else { return fieldToComponentImpl(field, extra); }
+  };
+  fieldToComponent = (field: Field)=>fieldToComponentImpl(field, middlewares);
+
+
+  const components = r.map(fieldToComponent, fields);
+
+  return components;
+};
+
+rawObjectToComponent = (rawObject: RawObject): React.FC => {
+  // Transform entries.
+  const transformedEntries = transformEntries(entryTransMiddlewares, rawObject);
+
+  // Generate fields.
+  const fields = generateFields(fieldGenMiddlewares, transformedEntries);
+
+  // Generate components.
+  const components = generateComponents(componentGenMiddlewares, fields);
+
+  // Bundle.
+  const Container = ({children}: {children: any}) => <div style={{display: "block"}}>{children}</div>;
+  const result = ()=><div style={{display: "inline-block", border: "1px solid black"}}>
+    {components.map(C => <Container><C/></Container>)}
   </div>;
+
+  return result;
+};
+
+const GeneralComponent = (p: Record<string, any>) => {
+  const C = rawObjectToComponent(Object.entries(p));
+  return <C/>;
+  // // Props to entries.
+  // const entries: RawEntry[] = Object.entries(p);
+  //
+  // // Transform entries.
+  // const transformedEntries = transformEntries(entryTransMiddlewares, entries);
+  //
+  // // Generate fields.
+  // const fields = generateFields(fieldGenMiddlewares, transformedEntries);
+  //
+  // // Generate components.
+  // const components = generateComponents(componentGenMiddlewares, fields);
+  //
+  // // Bundle.
+  // const Container = ({children}: {children: any}) => <div style={{display: "block"}}>{children}</div>;
+  // const result = <div style={{display: "block"}}>
+  //   {components.map(C => <Container><C/></Container>)}
+  // </div>;
+  //
+  // // Render.
+  // return result;
 };
 
 const handler = {
   get: (obj: any, componentName: string) => {
     if (componentName in obj) { return obj[componentName]; }
-    
+
     return GeneralComponent;
   }
 };
