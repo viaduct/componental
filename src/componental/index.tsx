@@ -218,9 +218,6 @@ const fieldGenMiddlewares: FieldGenMiddleware[] = [
   (entry: Entry) => {
     if (entryKind(entry) !== "edit") { return; }
 
-    console.log(entryKind(entry));
-    // @ts-ignore
-    console.log(';;;', entry, entry.value);
     const {
       value: [valueName, valueValue],
       setter: [setterName, setterValue],
