@@ -24,10 +24,10 @@ const bundleValueSetterPairs: EntryTransMiddleware = (entries: Entry[]): Entry[]
   const notNull = (a: any) => a != null;
 
   // To index, entry pair.
-  const indexedEntries: {index: number; entry: Entry}[] = r.addIndex(r.map(
+  const indexedEntries: {index: number; entry: Entry}[] = r.addIndex(r.map)(
     (entry: Entry, index: number) => ({index, entry}),
     entries
-  ));
+  );
 
   // Group into 2.
   const filterByKind = (targetKind: string) => ({entry: {kind}}: {entry: Entry}) => kind === targetKind;
@@ -41,7 +41,7 @@ const bundleValueSetterPairs: EntryTransMiddleware = (entries: Entry[]): Entry[]
   );
 
   // Filter event-named-entries with actual matching value pair.
-  const indexedRawEntryToPair = (indexedEntry: {index: number; entry: RawEntry}) => [indexedEntry.entry.name, indexedEntry.entry];
+  const indexedRawEntryToPair = (indexedEntry: {index: number; entry: RawEntry}) => [indexedEntry.entry.name, indexedEntry];
   const rawEntriesByName = Map(r.map(indexedRawEntryToPair, indexedRawEntries));
   const valuePairedEntries: {
     setter: {index: number; entry: RawEntry};

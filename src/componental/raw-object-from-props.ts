@@ -5,7 +5,7 @@ const rawObjectFromProps = (obj: Record<string, any>): RawObject => {
   const entries = Object.entries(obj);
 
   // Convert a js entry into RawEntries.
-  const mapper = ([name, value]: [name: string, value: any]): RawEntry => ({
+  const mapper = ([name, value]: [string, any]): RawEntry => ({
     kind: "RAW",
     name,
     value,

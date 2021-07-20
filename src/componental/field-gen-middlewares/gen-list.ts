@@ -1,6 +1,6 @@
 // @ts-ignore
 import * as R from "ramda";
-import {Entry, Field, FieldGenMiddleware, FieldGenMiddlewareContext} from "../types";
+import {Entry, Field, FieldGenMiddleware} from "../types";
 import rawObjectFromProps from "../raw-object-from-props";
 
 const r = R;
@@ -15,7 +15,7 @@ const genList: FieldGenMiddleware = (entry: Entry) => {
   return {
     kind: "LIST",
     name,
-    subobjects: r.map(rawObjectFromProps),
+    subobjects: r.map(rawObjectFromProps, entry.value),
   } as Field;
 };
 

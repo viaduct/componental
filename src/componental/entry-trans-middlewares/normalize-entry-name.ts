@@ -8,16 +8,16 @@ const normalizeEntryName: EntryTransMiddleware = (entries: Entry[]): Entry[] => 
   const mapper = (entry: Entry): Entry => {
     if (entry.kind === "RAW")
     {
-      return r.over(r.lensProp("name"), fromCamelCase);
+      return r.over(r.lensProp("name"), fromCamelCase, entry);
     }
     else
     {
       return entry;
     }
   };
-  const newEntries: Entry[] = r.entries(mapper, entries);
+  const newEntries: Entry[] = r.map(mapper, entries);
 
   return newEntries;
-}
+};
 
 export default normalizeEntryName;

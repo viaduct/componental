@@ -1,4 +1,5 @@
 import React from "react";
+import Field_ from "./field-types";
 
 type RawEntry = {
   kind: "RAW";
@@ -13,19 +14,27 @@ type EditEntry = {
 };
 type Entry = RawEntry | EditEntry;
 
-type Field = {kind: string;};
+type Field = Field_;
 
 type EntryTransMiddlewareContext = {};
-type FieldGenMiddlewareContext = {
-  generateField: (entry: Field)=>Field;
-};
+type FieldGenMiddlewareContext = {};
 type ComponentGenMiddlewareContext = {
-  generateComponent: (field: Field)=>React.FC;
+  generateComponent: (rawObject: RawObject)=>React.FC;
 };
 
-type EntryTransMiddleware = (entries: Entry[])=>Entry[];
-type FieldGenMiddleware = (entry: Entry, generateField: (entry: Entry)=>Field)=>Field | undefined;
-type ComponentGenMiddleware = (field: Field, generateComponent: (field: Field)=>React.FC)=>React.FC | undefined;
+type EntryTransMiddleware = (entries: Entry[], context: EntryTransMiddlewareContext)=>Entry[];
+type FieldGenMiddleware = (entry: Entry, context: FieldGenMiddlewareContext)=>Field | undefined;
+type ComponentGenMiddleware = (field: Field, context: ComponentGenMiddlewareContext)=>React.FC | undefined;
+
+type PipelineParams = {
+  entryTransMiddlewares: EntryTransMiddleware[];
+  fieldGenMiddlewares: FieldGenMiddleware[];
+  componentGenMiddlewares: ComponentGenMiddleware[];
+};
+
+type Pipeline = {
+  generalComponent: React.FC;
+};
 
 export type {
   RawEntry,
@@ -39,4 +48,6 @@ export type {
   EntryTransMiddleware,
   FieldGenMiddleware,
   ComponentGenMiddleware,
+  PipelineParams,
+  Pipeline,
 };
