@@ -36,7 +36,6 @@ type Field = (
   {
     kind: "LIST";
     name: string;
-    // subfields: Field[];
     subobjects: RawObject[];
   }
 );
@@ -103,21 +102,6 @@ const toCamelCase = (normalized: string): string => {
   return impl(normalized, false);
 };
 
-const eventName = (name: string): string | undefined => {
-  const nameTokens = name.split(" ");
-
-  if (nameTokens.length > 2) {
-    const first = nameTokens[0];
-    const last = nameTokens[nameTokens.length - 1];
-
-    if (first === "on" && last === "change")
-    {
-      return nameTokens.slice(1, nameTokens.length - 1).join(" ");
-    }
-  }
-
-  return;
-};
 
 
 
@@ -139,6 +123,23 @@ const entryTransMiddlewares: EntryTransMiddleware[] = [
 
   // Bundle value-setter pairs.
   (entries: Entry[]) => {
+    // Utility function.
+    const eventName = (name: string): string | undefined => {
+      const nameTokens = name.split(" ");
+
+      if (nameTokens.length > 2) {
+        const first = nameTokens[0];
+        const last = nameTokens[nameTokens.length - 1];
+
+        if (first === "on" && last === "change")
+        {
+          return nameTokens.slice(1, nameTokens.length - 1).join(" ");
+        }
+      }
+
+      return;
+    };
+
     const convertEditEntries = (rawEntries: RawEntry[]): Entry[] => {
       const extractEditEntries = (rawPairs: [string, any][]): {
         extraRawPairs: RawEntry[];
