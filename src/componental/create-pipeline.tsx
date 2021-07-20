@@ -33,7 +33,7 @@ const createPipeline = (p: PipelineParams): Pipeline => {
     return transformEntries(extra, first(entries, context));
   };
 
-  const generateField = (middlewares: FieldGenMiddleware[], entry: Entry): Field => {
+  const generateField = (middlewares: FieldGenMiddleware[], entry: Entry, rawObject: RawObject): Field => {
     if (middlewares.length === 0) {
       console.error(entry);
       throw new Error('Cannot convert entry to field.');
@@ -41,18 +41,19 @@ const createPipeline = (p: PipelineParams): Pipeline => {
 
     const [first, ...extra] = middlewares;
 
-    const context: FieldGenMiddlewareContext = {};
+    const context: FieldGenMiddlewareContext = {parentObject: rawObject};
     const maybeField = first(entry, context);
 
     if (maybeField != null) {
       return maybeField;
     } else {
-      return generateField(extra, entry);
+      return generateField(extra, entry, rawObject);
     }
   };
 
-  const generateFields = (middlewares: FieldGenMiddleware[], entries: Entry[]): Field[] => {
-    return r.map((entry: Entry) => generateField(middlewares, entry), entries);
+  const generateFields = (middlewares: FieldGenMiddleware[], rawObject: RawObject): Field[] => {
+    const entries: Entry[] = rawObject.entries;
+    return r.map((entry: Entry) => generateField(middlewares, entry, rawObject), entries);
   };
 
   const generateComponent = (middlewares: ComponentGenMiddleware[], field: Field): React.FC => {
@@ -82,10 +83,10 @@ const createPipeline = (p: PipelineParams): Pipeline => {
 
   rawObjectTakingGeneralObject = ({rawObject}: { rawObject: RawObject }) => {
     // Transform entries.
-    const transformedEntries = transformEntries(p.entryTransMiddlewares, rawObject);
+    const transformedEntries = transformEntries(p.entryTransMiddlewares, rawObject.entries);
 
     // Generate fields.
-    const fields = generateFields(p.fieldGenMiddlewares, transformedEntries);
+    const fields = generateFields(p.fieldGenMiddlewares, {entries: transformedEntries, direction: rawObject.direction});
 
     // Generate components.
     const components = generateComponents(p.componentGenMiddlewares, fields);
@@ -100,13 +101,13 @@ const createPipeline = (p: PipelineParams): Pipeline => {
       return NewComp;
     };
 
-    const Wrapped = wrapComponents(components);
+    const Wrapped = wrapComponents(components, rawObject.direction);
     return <Wrapped/>;
   };
 
   generalComponent = (rawRecord: Record<string, any>) => {
     // To rawObject.
-    const rawObject = rawObjectFromProps(rawRecord);
+    const rawObject = rawObjectFromProps(rawRecord, "vertical");
 
     const R = rawObjectTakingGeneralObject;
 

@@ -6,7 +6,10 @@ type RawEntry = {
   name: string;
   value: any;
 };
-type RawObject = RawEntry[];
+type RawObject = {
+  direction: "horizontal" | "vertical";
+  entries: RawEntry[];
+};
 type EditEntry = {
   kind: "EDIT";
   value: RawEntry;
@@ -17,7 +20,9 @@ type Entry = RawEntry | EditEntry;
 type Field = Field_;
 
 type EntryTransMiddlewareContext = {};
-type FieldGenMiddlewareContext = {};
+type FieldGenMiddlewareContext = {
+  parentObject: RawObject;
+};
 type ComponentGenMiddlewareContext = {
   generateComponent: (rawObject: RawObject)=>React.FC;
 };

@@ -1,6 +1,6 @@
 import {RawEntry, RawObject} from "./types";
 
-const rawObjectFromProps = (obj: Record<string, any>): RawObject => {
+const rawObjectFromProps = (obj: Record<string, any>, direction: "horizontal" | "vertical"): RawObject => {
   // To entries.
   const entries = Object.entries(obj);
 
@@ -10,10 +10,13 @@ const rawObjectFromProps = (obj: Record<string, any>): RawObject => {
     name,
     value,
   });
-  const rawEntries: RawObject = entries.map(mapper);
+  const rawObject: RawObject = {
+    entries: entries.map(mapper),
+    direction,
+  };
 
   // Response.
-  return rawEntries;
+  return rawObject;
 };
 
 export default rawObjectFromProps;
