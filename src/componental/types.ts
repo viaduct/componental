@@ -6,9 +6,9 @@ type RawEntry = {
   name: string;
   value: any;
 };
-type RawObject = {
+type EntryObject = {
   direction: "horizontal" | "vertical";
-  entries: RawEntry[];
+  entries: Entry[];
 };
 type EditEntry = {
   kind: "EDIT";
@@ -21,10 +21,10 @@ type Field = Field_;
 
 type EntryTransMiddlewareContext = {};
 type FieldGenMiddlewareContext = {
-  parentObject: RawObject;
+  parentObject: EntryObject;
 };
 type ComponentGenMiddlewareContext = {
-  generateComponent: (rawObject: RawObject)=>React.FC;
+  generateComponent: (rawObject: EntryObject)=>React.FC;
 };
 
 type EntryTransMiddleware = (entries: Entry[], context: EntryTransMiddlewareContext)=>Entry[];
@@ -43,7 +43,7 @@ type Pipeline = {
 
 export type {
   RawEntry,
-  RawObject,
+  EntryObject,
   EditEntry,
   Entry,
   Field,

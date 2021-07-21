@@ -16,6 +16,7 @@ const genList: FieldGenMiddleware = (entry: Entry, context: FieldGenMiddlewareCo
     kind: "LIST",
     name,
     subobjects: r.map((valueItem: Record<string, any>) => rawObjectFromProps(valueItem, context.parentObject.direction), entry.value),
+    // direction: context.parentObject.direction,
     direction: context.parentObject.direction === "horizontal" ? "vertical" : "horizontal",
   } as Field;
 };

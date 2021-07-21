@@ -11,6 +11,7 @@ function App() {
   return (
     <div className="App">
       <GC.A
+        style={{width: 140}}
         title={"안녕"}
         description={"로봇들!"}
         anyValue={anyValue}
@@ -18,9 +19,23 @@ function App() {
         dap={dap}
         onDapChange={setDap}
         onSelect={()=>alert("선택되었습니다!")}
+        tak={[
+          {
+            id: "123",
+            items: [
+            {id: "asf", name: "김희원", desc: "변태"},
+            {id: "asfd", name: "한상준", desc: "똑똑똑이"},
+          ]},
+          {
+            id: "234",
+            name: "뻑",
+            desc: "뻑이가요",
+          }
+        ]}
       />
 
       <GC.Topic
+        style={{width: 200}}
         title={"마왕 김희원"}
         description={"오늘도 마왕의 책을 본다"}
         lastActionTakenAt={new Date()}

@@ -1,9 +1,9 @@
-import {RawObject} from "../types";
+import {EntryObject} from "../types";
 
 type FieldList = {
   kind: "LIST";
   name: string;
-  subobjects: RawObject[];
+  subobjects: EntryObject[];
   direction: "horizontal" | "vertical";
 };
 

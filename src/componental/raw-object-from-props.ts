@@ -1,6 +1,6 @@
-import {RawEntry, RawObject} from "./types";
+import {RawEntry, EntryObject} from "./types";
 
-const rawObjectFromProps = (obj: Record<string, any>, direction: "horizontal" | "vertical"): RawObject => {
+const rawObjectFromProps = (obj: Record<string, any>, direction: "horizontal" | "vertical"): EntryObject => {
   // To entries.
   const entries = Object.entries(obj);
 
@@ -10,7 +10,7 @@ const rawObjectFromProps = (obj: Record<string, any>, direction: "horizontal" | 
     name,
     value,
   });
-  const rawObject: RawObject = {
+  const rawObject: EntryObject = {
     entries: entries.map(mapper),
     direction,
   };

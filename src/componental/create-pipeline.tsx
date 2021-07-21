@@ -9,7 +9,7 @@ import {
   FieldGenMiddlewareContext,
   Pipeline,
   PipelineParams,
-  RawObject
+  EntryObject
 } from "./types";
 import React from "react";
 import rawObjectFromProps from "./raw-object-from-props";
@@ -19,7 +19,7 @@ import * as R from "ramda";
 const r = R;
 
 const createPipeline = (p: PipelineParams): Pipeline => {
-  let rawObjectTakingGeneralObject: React.FC<{ rawObject: RawObject }>;
+  let rawObjectTakingGeneralObject: React.FC<{style?: Record<string, any> | undefined; className?: string | undefined; rawObject: EntryObject}>;
   let generalComponent: React.FC;
 
   const transformEntries = (middlewares: EntryTransMiddleware[], entries: Entry[]): Entry[] => {
@@ -33,7 +33,7 @@ const createPipeline = (p: PipelineParams): Pipeline => {
     return transformEntries(extra, first(entries, context));
   };
 
-  const generateField = (middlewares: FieldGenMiddleware[], entry: Entry, rawObject: RawObject): Field => {
+  const generateField = (middlewares: FieldGenMiddleware[], entry: Entry, rawObject: EntryObject): Field => {
     if (middlewares.length === 0) {
       console.error(entry);
       throw new Error('Cannot convert entry to field.');
@@ -51,7 +51,7 @@ const createPipeline = (p: PipelineParams): Pipeline => {
     }
   };
 
-  const generateFields = (middlewares: FieldGenMiddleware[], rawObject: RawObject): Field[] => {
+  const generateFields = (middlewares: FieldGenMiddleware[], rawObject: EntryObject): Field[] => {
     const entries: Entry[] = rawObject.entries;
     return r.map((entry: Entry) => generateField(middlewares, entry, rawObject), entries);
   };
@@ -66,7 +66,7 @@ const createPipeline = (p: PipelineParams): Pipeline => {
 
     const R = rawObjectTakingGeneralObject;
     const context: ComponentGenMiddlewareContext = {
-      generateComponent: (rawObject: RawObject) => () => <R rawObject={rawObject}/>,
+      generateComponent: (rawObject: EntryObject) => () => <R rawObject={rawObject}/>,
     };
     const maybeComponent = first(field, context);
 
@@ -81,7 +81,7 @@ const createPipeline = (p: PipelineParams): Pipeline => {
     return r.map((field: Field) => generateComponent(middlewares, field), fields);
   };
 
-  rawObjectTakingGeneralObject = ({rawObject}: { rawObject: RawObject }) => {
+  rawObjectTakingGeneralObject = ({style, className, rawObject}: {style?: Record<string, any> | undefined; className?: string | undefined; rawObject: EntryObject }) => {
     // Transform entries.
     const transformedEntries = transformEntries(p.entryTransMiddlewares, rawObject.entries);
 
@@ -94,7 +94,7 @@ const createPipeline = (p: PipelineParams): Pipeline => {
     // Bundle.
     const wrapComponents = (components: React.FC[], direction: "vertical" | "horizontal" = "vertical"): React.FC => {
       const NewComp = () => {
-        return <div style={{display: "inline-flex", flexDirection: direction === "vertical" ? "column" : "row"}}>
+        return <div style={{border: "1px solid lightgray", display: "inline-flex", flexDirection: direction === "vertical" ? "column" : "row", ...style}} className={className}>
           {r.addIndex(r.map)((C: React.FC, index: number) => <C key={fields[index].name}/>, components)}
         </div>
       };
@@ -105,13 +105,16 @@ const createPipeline = (p: PipelineParams): Pipeline => {
     return <Wrapped/>;
   };
 
-  generalComponent = (rawRecord: Record<string, any>) => {
+  generalComponent = (p: Record<string, any>) => {
+    // Take style and className.
+    const {style, className, ...rawRecord} = p
+
     // To rawObject.
     const rawObject = rawObjectFromProps(rawRecord, "vertical");
 
     const R = rawObjectTakingGeneralObject;
 
-    return <R rawObject={rawObject}/>;
+    return <R style={style} className={className} rawObject={rawObject}/>;
   };
 
   return {generalComponent};
