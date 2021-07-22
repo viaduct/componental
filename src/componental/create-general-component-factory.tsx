@@ -7,9 +7,9 @@ import {
   Field,
   FieldGenMiddleware,
   FieldGenMiddlewareContext,
-  Pipeline,
-  PipelineParams,
-  EntryObject
+  CreateGeneralComponent,
+  CreateGeneralComponentFactoryParams,
+  EntryObject, VHDirection
 } from "./types";
 import React from "react";
 import rawObjectFromProps from "./raw-object-from-props";
@@ -18,7 +18,7 @@ import * as R from "ramda";
 
 const r = R;
 
-const createPipeline = (p: PipelineParams): Pipeline => {
+const createGeneralComponentFactory = (p: CreateGeneralComponentFactoryParams): CreateGeneralComponent => {
   let rawObjectTakingGeneralObject: React.FC<{style?: Record<string, any> | undefined; className?: string | undefined; rawObject: EntryObject}>;
   let generalComponent: React.FC;
 
@@ -92,7 +92,7 @@ const createPipeline = (p: PipelineParams): Pipeline => {
     const components = generateComponents(p.componentGenMiddlewares, fields);
 
     // Bundle.
-    const wrapComponents = (components: React.FC[], direction: "vertical" | "horizontal" = "vertical"): React.FC => {
+    const wrapComponents = (components: React.FC[], direction: VHDirection = "vertical"): React.FC => {
       const NewComp = () => {
         return <div style={{border: "1px solid lightgray", display: "inline-flex", flexDirection: direction === "vertical" ? "column" : "row", ...style}} className={className}>
           {r.addIndex(r.map)((C: React.FC, index: number) => <C key={fields[index].name}/>, components)}
@@ -117,7 +117,8 @@ const createPipeline = (p: PipelineParams): Pipeline => {
     return <R style={style} className={className} rawObject={rawObject}/>;
   };
 
-  return {generalComponent};
+  // todo handle componentName.
+  return (componentName: string) => generalComponent;
 };
 
-export default createPipeline;
+export default createGeneralComponentFactory;

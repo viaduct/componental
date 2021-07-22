@@ -1,4 +1,4 @@
-import {EntryObject, Pipeline} from "./types";
+import {EntryObject, CreateGeneralComponent} from "./types";
 import React from "react";
 
 type VHDirection = "vertical" | "horizontal";
@@ -11,7 +11,7 @@ type ComponentContext = {
   path: (string | number)[];
 };
 
-type UnitedComponentContext = Pipeline & ComponentContext;
+type UnitedComponentContext = CreateGeneralComponent & ComponentContext;
 
 type EntryTransContext = {};
 type UnitedEntryTransContext = UnitedComponentContext & EntryTransContext;
@@ -68,11 +68,11 @@ const createComponentContext = (componentName: string, props: Record<string, any
   return result as ComponentContext;
 };
 
-const createGeneralComponent = (componentName: string, pipeline: Pipeline): React.FC<GeneralComponentProps> => {
-  const NewComp = (p: GeneralComponentProps) => {
-    // Create component-context.
-    const context: ComponentContext = createComponentContext(componentName, p);
-
-
-  };
-};
+// const createGeneralComponent = (componentName: string, pipeline: Pipeline): React.FC<GeneralComponentProps> => {
+//   const NewComp = (p: GeneralComponentProps) => {
+//     // Create component-context.
+//     const context: ComponentContext = createComponentContext(componentName, p);
+//
+//
+//   };
+// };

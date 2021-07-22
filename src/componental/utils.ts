@@ -1,3 +1,5 @@
+import {VHDirection} from "./types";
+
 const isUpperCase = (value: string): boolean => value === value.toUpperCase();
 
 const fromCamelCase = (camel: string): string => {
@@ -44,9 +46,15 @@ const toCamelCase = (normalized: string): string => {
   return impl(normalized, false);
 };
 
+const oppositeVHDirection = (direc: VHDirection): VHDirection => direc === "horizontal" ? "vertical" : "horizontal";
+
+const vhDirectionToFlexDirection = (direc: VHDirection): "row" | "column" => direc === "horizontal" ? "row" : "column";
+
 export {
   isUpperCase,
   fromCamelCase,
   toCamelCase,
+  oppositeVHDirection,
+  vhDirectionToFlexDirection,
 };
 

@@ -1,10 +1,10 @@
-import {EntryObject} from "../types";
+import {EntryObject, VHDirection} from "../types";
 
 type FieldList = {
   kind: "LIST";
   name: string;
   subobjects: EntryObject[];
-  direction: "horizontal" | "vertical";
+  direction: VHDirection;
 };
 
 export default FieldList;

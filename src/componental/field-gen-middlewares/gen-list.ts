@@ -2,6 +2,7 @@
 import * as R from "ramda";
 import {Entry, Field, FieldGenMiddleware, FieldGenMiddlewareContext} from "../types";
 import rawObjectFromProps from "../raw-object-from-props";
+import {oppositeVHDirection} from "../utils";
 
 const r = R;
 
@@ -17,7 +18,7 @@ const genList: FieldGenMiddleware = (entry: Entry, context: FieldGenMiddlewareCo
     name,
     subobjects: r.map((valueItem: Record<string, any>) => rawObjectFromProps(valueItem, context.parentObject.direction), entry.value),
     // direction: context.parentObject.direction,
-    direction: context.parentObject.direction === "horizontal" ? "vertical" : "horizontal",
+    direction: oppositeVHDirection(context.parentObject.direction),
   } as Field;
 };
 

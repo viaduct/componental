@@ -3,22 +3,28 @@ import React from "react";
 import entryTransMiddlewares from "./entry-trans-middlewares";
 import fieldGenMiddlewares from "./field-gen-middlewares";
 import componentGenMiddlewares from "./component-gen-middlewares";
-import createPipeline from "./create-pipeline";
+import createGeneralComponentFactory from "./create-general-component-factory";
 
 
-const pipeline = createPipeline({
+const createGeneralComponent = createGeneralComponentFactory({
   entryTransMiddlewares,
   fieldGenMiddlewares,
   componentGenMiddlewares,
 });
 
-const GeneralComponent = pipeline.generalComponent;
+// const GeneralComponent = createGeneralComponent;
 
 const handler = {
   get: (obj: any, componentName: string) => {
     if (componentName in obj) { return obj[componentName]; }
 
-    return GeneralComponent;
+    // Create component.
+    const newComponent = createGeneralComponent(componentName);
+
+    // Store to obj.
+    obj[componentName] = newComponent;
+
+    return newComponent;
   }
 };
 

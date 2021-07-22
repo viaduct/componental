@@ -1,5 +1,6 @@
 import {ComponentGenMiddleware, ComponentGenMiddlewareContext, Entry, Field, RawEntry} from "../types";
 import React from "react";
+import {vhDirectionToFlexDirection} from "../utils";
 
 const genList: ComponentGenMiddleware = (field: Field, context: ComponentGenMiddlewareContext) => {
   if (field.kind !== "LIST") { return; }
@@ -11,7 +12,7 @@ const genList: ComponentGenMiddleware = (field: Field, context: ComponentGenMidd
   const components: React.FC[] = field.subobjects.map(context.generateComponent);
 
   // Make them into one component, and response.
-  return ()=><div style={{display: "inline-flex", flexWrap: "wrap", flexDirection: field.direction === "horizontal" ? "row" : "column"}}>
+  return ()=><div style={{display: "inline-flex", flexWrap: "wrap", flexDirection: vhDirectionToFlexDirection(field.direction)}}>
     {components.map((C: React.FC, index: number) => {
       const subobject = field.subobjects[index];
 
