@@ -1,13 +1,23 @@
 import React from "react";
 import Field_ from "./field-types";
 
-// type ItemChild = {
-//   kind: "CHILD";
-// };
-// type ItemFromClient = {
-//   kind: "FROM_CLIENT";
-// };
-// type Item = ItemChild | ItemFromClient;
+type WrapperProps = Record<string, any> & {
+  style?: Record<string, any> | undefined;
+  className?: string | undefined;
+}
+type ItemChild = {
+  kind: "CHILD";
+  client: ItemFromClient;
+  
+};
+type ItemFromClient = {
+  kind: "FROM_CLIENT";
+  props: Record<string, any>;
+  entries: Entry[];
+  wrapperProps: WrapperProps;
+  direction: VHDirection;
+};
+type Item = ItemChild | ItemFromClient;
 
 type VHDirection = "horizontal" | "vertical";
 type RawEntry = {
@@ -28,6 +38,11 @@ type Entry = RawEntry | EditEntry;
 
 type Field = Field_;
 
+// type BaseMiddlewareContext = {
+//   entryTransMiddlewares: EntryTransMiddleware[];
+//   fieldGenMiddlewares: FieldGenMiddleware[];
+//   componentGenMiddlewares: ComponentGenMiddleware[];
+// };
 type EntryTransMiddlewareContext = {};
 type FieldGenMiddlewareContext = {
   parentObject: EntryObject;
