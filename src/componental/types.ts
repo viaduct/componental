@@ -14,12 +14,11 @@ type ItemPayload = {
 };
 type ItemChild = {
   kind: "CHILD";
-  client: ItemFromClient;
-  path: (string | number)[];
+  parent: Item;
 } & ItemPayload;
 type ItemFromClient = {
   kind: "FROM_CLIENT";
-  componentName: string;
+  // componentName: string;
 } & ItemPayload;
 type Item = ItemChild | ItemFromClient;
 

@@ -9,21 +9,20 @@ import {
   FieldGenMiddlewareContext,
   CreateGeneralComponent,
   CreateGeneralComponentFactoryParams,
-  EntryObject, VHDirection, ItemFromClient, GeneralComponentProps
+  EntryObject, VHDirection, ItemFromClient, GeneralComponentProps, ItemPayload
 } from "./types";
 import React from "react";
 import rawObjectFromProps from "./raw-object-from-props";
 // @ts-ignore
 import * as R from "ramda";
+import {vhDirectionToFlexDirection} from "./utils";
 
 const r = R;
 
-const createItemFromClient = (componentName: string, props: GeneralComponentProps): ItemFromClient => {
+const createItemFromClient = (props: GeneralComponentProps): ItemPayload => {
   const notNull = (a: any) => a != null;
 
-  const item: ItemFromClient = {
-    kind: "FROM_CLIENT",
-    componentName,
+  const item: ItemPayload = {
     props,
     entries: {
       ...r.omit(["style", "className", "_componental"], props),
@@ -50,10 +49,11 @@ const createItemFromClient = (componentName: string, props: GeneralComponentProp
 };
 
 const createGeneralComponentFactory = (p: CreateGeneralComponentFactoryParams): CreateGeneralComponent => {
+  let theGeneralComponent: React.FC<GeneralComponentProps>;
 
 
-  let rawObjectTakingGeneralObject: React.FC<{style?: Record<string, any> | undefined; className?: string | undefined; rawObject: EntryObject}>;
-  let generalComponent: React.FC;
+  // let rawObjectTakingGeneralObject: React.FC<{style?: Record<string, any> | undefined; className?: string | undefined; rawObject: EntryObject}>;
+  // let generalComponent: React.FC;
 
 
 
@@ -99,7 +99,7 @@ const createGeneralComponentFactory = (p: CreateGeneralComponentFactoryParams): 
 
     const [first, ...extra] = middlewares;
 
-    const R = rawObjectTakingGeneralObject;
+    const R = theGeneralComponent;
     const context: ComponentGenMiddlewareContext = {
       generateComponent: (rawObject: EntryObject) => () => <R rawObject={rawObject}/>,
     };
@@ -116,50 +116,80 @@ const createGeneralComponentFactory = (p: CreateGeneralComponentFactoryParams): 
     return r.map((field: Field) => generateComponent(middlewares, field), fields);
   };
 
-  rawObjectTakingGeneralObject = ({style, className, rawObject}: {style?: Record<string, any> | undefined; className?: string | undefined; rawObject: EntryObject }) => {
+  // rawObjectTakingGeneralObject = ({style, className, rawObject}: {style?: Record<string, any> | undefined; className?: string | undefined; rawObject: EntryObject }) => {
+  //   // Transform entries.
+  //   const transformedEntries = transformEntries(p.entryTransMiddlewares, rawObject.entries);
+  //
+  //   // Generate fields.
+  //   const fields = generateFields(p.fieldGenMiddlewares, {entries: transformedEntries, direction: rawObject.direction});
+  //
+  //   // Generate components.
+  //   const components = generateComponents(p.componentGenMiddlewares, fields);
+  //
+  //   // Bundle.
+  //   const wrapComponents = (components: React.FC[], direction: VHDirection = "vertical"): React.FC => {
+  //     const NewComp = () => {
+  //       return <div style={{border: "1px solid lightgray", display: "inline-flex", flexDirection: direction === "vertical" ? "column" : "row", ...style}} className={className}>
+  //         {r.addIndex(r.map)((C: React.FC, index: number) => <C key={fields[index].name}/>, components)}
+  //       </div>
+  //     };
+  //     return NewComp;
+  //   };
+  //
+  //   const Wrapped = wrapComponents(components, rawObject.direction);
+  //   return <Wrapped/>;
+  // };
+  //
+  // generalComponent = (p: Record<string, any>) => {
+  //   // Take style and className.
+  //   const {style, className, ...rawRecord} = p
+  //
+  //   // To rawObject.
+  //   const rawObject = rawObjectFromProps(rawRecord, "vertical");
+  //
+  //   const R = rawObjectTakingGeneralObject;
+  //
+  //   return <R style={style} className={className} rawObject={rawObject}/>;
+  // };
+
+
+
+  theGeneralComponent = (generalProps: GeneralComponentProps) => {
+    const itemPayload: ItemPayload = createItemFromClient(generalProps);
+
     // Transform entries.
-    const transformedEntries = transformEntries(p.entryTransMiddlewares, rawObject.entries);
+    const transformedEntries = transformEntries(p.entryTransMiddlewares, itemPayload.entries);
 
     // Generate fields.
-    const fields = generateFields(p.fieldGenMiddlewares, {entries: transformedEntries, direction: rawObject.direction});
+    const fields = generateFields(p.fieldGenMiddlewares, {entries: transformedEntries, direction: itemPayload.direction});
 
     // Generate components.
     const components = generateComponents(p.componentGenMiddlewares, fields);
 
     // Bundle.
-    const wrapComponents = (components: React.FC[], direction: VHDirection = "vertical"): React.FC => {
+    const wrapComponents = (components: React.FC[]): React.FC => {
       const NewComp = () => {
-        return <div style={{border: "1px solid lightgray", display: "inline-flex", flexDirection: direction === "vertical" ? "column" : "row", ...style}} className={className}>
+        return <div
+          style={{
+            border: "1px solid lightgray",
+            display: "inline-flex",
+            flexDirection: vhDirectionToFlexDirection(itemPayload.direction),
+            ...itemPayload.wrapperProps.style
+          }}
+          {...r.omit(["style"], itemPayload.wrapperProps)}
+        >
           {r.addIndex(r.map)((C: React.FC, index: number) => <C key={fields[index].name}/>, components)}
         </div>
       };
       return NewComp;
     };
 
-    const Wrapped = wrapComponents(components, rawObject.direction);
+    const Wrapped = wrapComponents(components);
     return <Wrapped/>;
   };
 
-  generalComponent = (p: Record<string, any>) => {
-    // Take style and className.
-    const {style, className, ...rawRecord} = p
-
-    // To rawObject.
-    const rawObject = rawObjectFromProps(rawRecord, "vertical");
-
-    const R = rawObjectTakingGeneralObject;
-
-    return <R style={style} className={className} rawObject={rawObject}/>;
-  };
-
-  return (componentName: string) => ()
-  const theGeneralComponent = (p: GeneralComponentProps) => {
-    const item = createItemFromClient()
-
-  }
-
   // todo handle componentName.
-  return (componentName: string) => generalComponent;
+  return (componentName: string) => theGeneralComponent;
 };
 
 export default createGeneralComponentFactory;
