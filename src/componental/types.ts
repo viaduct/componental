@@ -1,23 +1,42 @@
 import React from "react";
 import Field_ from "./field-types";
 
-type WrapperProps = Record<string, any> & {
+type WrapperProps = {
   style?: Record<string, any> | undefined;
   className?: string | undefined;
-}
-type ItemChild = {
-  kind: "CHILD";
-  client: ItemFromClient;
-  
+  [key: string]: any;
 };
-type ItemFromClient = {
-  kind: "FROM_CLIENT";
+type ItemPayload = {
   props: Record<string, any>;
   entries: Entry[];
   wrapperProps: WrapperProps;
   direction: VHDirection;
 };
+type ItemChild = {
+  kind: "CHILD";
+  client: ItemFromClient;
+  path: (string | number)[];
+} & ItemPayload;
+type ItemFromClient = {
+  kind: "FROM_CLIENT";
+  componentName: string;
+} & ItemPayload;
 type Item = ItemChild | ItemFromClient;
+
+type GeneralComponentProps = {
+  style?: Record<string, any> | undefined;
+  className?: string | undefined;
+  _componental?: {
+    props?: Record<string, any> | undefined;
+    wrapperProps?: {
+      style?: Record<string, any> | undefined;
+      className?: string | undefined;
+      [key: string]: any;
+    } | undefined;
+    direction?: VHDirection | undefined;
+  } | undefined,
+  [key: string]: any;
+};
 
 type VHDirection = "horizontal" | "vertical";
 type RawEntry = {
@@ -38,12 +57,12 @@ type Entry = RawEntry | EditEntry;
 
 type Field = Field_;
 
-// type BaseMiddlewareContext = {
-//   entryTransMiddlewares: EntryTransMiddleware[];
-//   fieldGenMiddlewares: FieldGenMiddleware[];
-//   componentGenMiddlewares: ComponentGenMiddleware[];
-// };
-type EntryTransMiddlewareContext = {};
+type BaseMiddlewareContext = {
+  entryTransMiddlewares: EntryTransMiddleware[];
+  fieldGenMiddlewares: FieldGenMiddleware[];
+  componentGenMiddlewares: ComponentGenMiddleware[];
+};
+type EntryTransMiddlewareContext = BaseMiddlewareContext & {};
 type FieldGenMiddlewareContext = {
   parentObject: EntryObject;
 };
@@ -64,6 +83,12 @@ type CreateGeneralComponentFactoryParams = {
 type CreateGeneralComponent = (componentName: string)=>React.FC;
 
 export type {
+  WrapperProps,
+  ItemPayload,
+  ItemChild,
+  ItemFromClient,
+  Item,
+  GeneralComponentProps,
   VHDirection,
   RawEntry,
   EntryObject,

@@ -9,7 +9,7 @@ import {
   FieldGenMiddlewareContext,
   CreateGeneralComponent,
   CreateGeneralComponentFactoryParams,
-  EntryObject, VHDirection
+  EntryObject, VHDirection, ItemFromClient, GeneralComponentProps
 } from "./types";
 import React from "react";
 import rawObjectFromProps from "./raw-object-from-props";
@@ -18,9 +18,44 @@ import * as R from "ramda";
 
 const r = R;
 
+const createItemFromClient = (componentName: string, props: GeneralComponentProps): ItemFromClient => {
+  const notNull = (a: any) => a != null;
+
+  const item: ItemFromClient = {
+    kind: "FROM_CLIENT",
+    componentName,
+    props,
+    entries: {
+      ...r.omit(["style", "className", "_componental"], props),
+      ...props?._componental?.props,
+    },
+    wrapperProps: {
+      ...r.omit(["style", "className"], props?._componental?.wrapperProps ?? {}),
+      style: {...props?.style, ...props?._componental?.wrapperProps?.style},
+      className: [props?.className, props?._componental?.wrapperProps?.className].filter(notNull).join(" "),
+    },
+    direction: props?._componental?.direction ?? "vertical",
+  };
+
+  if (Object.entries(item.wrapperProps.style!).length === 0)
+  {
+    delete item.wrapperProps.style;
+  }
+  if (Object.entries(item.wrapperProps.className!).length === 0)
+  {
+    delete item.wrapperProps.className;
+  }
+
+  return item;
+};
+
 const createGeneralComponentFactory = (p: CreateGeneralComponentFactoryParams): CreateGeneralComponent => {
+
+
   let rawObjectTakingGeneralObject: React.FC<{style?: Record<string, any> | undefined; className?: string | undefined; rawObject: EntryObject}>;
   let generalComponent: React.FC;
+
+
 
   const transformEntries = (middlewares: EntryTransMiddleware[], entries: Entry[]): Entry[] => {
     if (middlewares.length === 0) {
@@ -29,7 +64,7 @@ const createGeneralComponentFactory = (p: CreateGeneralComponentFactoryParams): 
 
     const [first, ...extra] = middlewares;
 
-    const context: EntryTransMiddlewareContext = {};
+    const context: EntryTransMiddlewareContext = {...p};
     return transformEntries(extra, first(entries, context));
   };
 
@@ -116,6 +151,12 @@ const createGeneralComponentFactory = (p: CreateGeneralComponentFactoryParams): 
 
     return <R style={style} className={className} rawObject={rawObject}/>;
   };
+
+  return (componentName: string) => ()
+  const theGeneralComponent = (p: GeneralComponentProps) => {
+    const item = createItemFromClient()
+
+  }
 
   // todo handle componentName.
   return (componentName: string) => generalComponent;
