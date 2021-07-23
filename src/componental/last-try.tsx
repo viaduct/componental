@@ -22,7 +22,6 @@ type GeneralComponentProps = {
     fieldGenMiddlewares?: FieldGenMiddleware[] | undefined;
     componentGenMiddlewares?: ComponentGenMiddleware[] | undefined;
     reactEntries?: Record<string, any> | undefined;
-    entries?: Entry[] | undefined;
     wrapperProps?: {
       style?: Record<string, any> | undefined;
       className?: string | undefined;
@@ -40,7 +39,6 @@ type GeneralComponentProtoProps = {
     fieldGenMiddlewares: FieldGenMiddleware[];
     componentGenMiddlewares: ComponentGenMiddleware[];
     reactEntries: Record<string, any>;
-    entries: Entry[];
     wrapperProps: {
       style?: Record<string, any> | undefined;
       className?: string | undefined;
@@ -59,6 +57,7 @@ let generalComponent: GeneralComponent;
 generalComponentProto = (p: GeneralComponentProtoProps) => {
   const componental = p._componental;
 
+  let entries: Entry[];
   {
     const reactEntriesToEntries = (reactEntries: Record<string, any>): Entry[] => {
       const mapper = ([name, value]: [string, any]): Entry => ({
@@ -69,8 +68,7 @@ generalComponentProto = (p: GeneralComponentProtoProps) => {
       return Object.entries(reactEntries).map(mapper);
     };
     const reactEntries = componental.reactEntries;
-    const entries: Entry[] = reactEntriesToEntries(reactEntries);
-    componental.entries = entries;
+    entries = reactEntriesToEntries(reactEntries);
   }
 
 
@@ -134,9 +132,7 @@ generalComponentProto = (p: GeneralComponentProtoProps) => {
   };
 
   // Transform entries.
-  const transformedEntries = transformEntries(componental.entryTransMiddlewares, componental.entries);
-  console.log(componental.entries);
-  console.log(transformedEntries);
+  const transformedEntries = transformEntries(componental.entryTransMiddlewares, entries);
 
   // Generate fields.
   const fields = generateFields(componental.fieldGenMiddlewares, transformedEntries);
@@ -179,7 +175,7 @@ generalComponent = (p: GeneralComponentProps) => {
   const GCP = generalComponentProto;
   const reactEntries = {
     ...r.omit(["_componental", "style", "className"], p),
-    ...p._componental?.entries,
+    ...p._componental?.reactEntries,
   };
   const notNull = (a: any) => a != null;
   return <GCP
@@ -189,7 +185,6 @@ generalComponent = (p: GeneralComponentProps) => {
       fieldGenMiddlewares: p._componental?.fieldGenMiddlewares ?? [],
       componentGenMiddlewares: p._componental?.componentGenMiddlewares ?? [],
       reactEntries,
-      entries: [], // todo remove this
       direction: p._componental?.direction ?? "vertical",
       wrapperProps: {
         ...p._componental?.wrapperProps,

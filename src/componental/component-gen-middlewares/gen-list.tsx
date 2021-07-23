@@ -20,7 +20,6 @@ const genList: ComponentGenMiddleware = (field: Field, context: ComponentGenMidd
     const GC = context.generalComponent;
     // todo I think passing the whole context is not a good idea.
     // todo I didn't pass reactEntries. The children may have the root components's reactEntries.(May not cause serious problem.)
-    console.log({...context, reactEntries: entriesToReactEntries(subobject.entries)});
     return ()=><GC _componental={{...context, entries: undefined, reactEntries: entriesToReactEntries(subobject.entries)}}/>;
   };
   const components: React.FC[] = field.subobjects.map(mapper);
