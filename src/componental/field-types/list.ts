@@ -1,9 +1,9 @@
-import {EntryObject, VHDirection} from "../types";
+import {VHDirection} from "../types";
 
 type FieldList = {
   kind: "LIST";
   name: string;
-  subobjects: EntryObject[];
+  subobjects: {reactProps: Record<string, any>}[];
   direction: VHDirection;
 };
 

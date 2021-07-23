@@ -57,9 +57,17 @@ type Entry = RawEntry | EditEntry;
 type Field = Field_;
 
 type BaseMiddlewareContext = {
+  componentName: string;
   entryTransMiddlewares: EntryTransMiddleware[];
   fieldGenMiddlewares: FieldGenMiddleware[];
   componentGenMiddlewares: ComponentGenMiddleware[];
+  reactEntries: Record<string, any>;
+  direction: VHDirection;
+  wrapperProps: {
+    style?: Record<string, any> | undefined;
+    className?: string | undefined;
+    [key: string]: any;
+  };
 };
 type EntryTransMiddlewareContext = BaseMiddlewareContext & {};
 type FieldGenMiddlewareContext = BaseMiddlewareContext & {};

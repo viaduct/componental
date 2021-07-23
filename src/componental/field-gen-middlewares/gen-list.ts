@@ -1,8 +1,6 @@
 // @ts-ignore
 import * as R from "ramda";
-import {Entry, Field, FieldGenMiddleware, FieldGenMiddlewareContext} from "../types";
-import rawObjectFromProps from "../raw-object-from-props";
-import {oppositeVHDirection} from "../utils";
+import {Entry, Field, FieldGenMiddleware} from "../types";
 
 const r = R;
 
@@ -17,10 +15,9 @@ const genList: FieldGenMiddleware = (entry: Entry) => {
     kind: "LIST",
     name,
     subobjects: r.map(
-      (valueItem: Record<string, any>) => rawObjectFromProps(valueItem, "vertical"),
+      (valueItem: any) => ({ reactProps: valueItem }),
       entry.value
     ),
-    // direction: context.parentObject.direction,
     direction: "horizontal",
   } as Field;
 };

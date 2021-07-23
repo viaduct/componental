@@ -39,7 +39,7 @@ function App() {
         title={"마왕 김희원"}
         description={"오늘도 마왕의 책을 본다"}
         lastActionTakenAt={new Date()}
-        tags={[{label: '123'}, {label: 'asf'}, {label: 'abc'}]}
+        tags={[{id: '123', label: '123'}, {id: 'asf', label: 'asf'}, {id: 'abc', label: 'abc'}]}
         onSelect={()=>alert("선택")}
         onMultiSelect={()=>alert("멀티 선택")}
         onEdit={()=>alert("수정")}
