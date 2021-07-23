@@ -6,7 +6,7 @@ import {oppositeVHDirection} from "../utils";
 
 const r = R;
 
-const genList: FieldGenMiddleware = (entry: Entry, context: FieldGenMiddlewareContext) => {
+const genList: FieldGenMiddleware = (entry: Entry) => {
   if (entry.kind !== "RAW") { return; }
 
   const {name, value} = entry;
@@ -16,9 +16,12 @@ const genList: FieldGenMiddleware = (entry: Entry, context: FieldGenMiddlewareCo
   return {
     kind: "LIST",
     name,
-    subobjects: r.map((valueItem: Record<string, any>) => rawObjectFromProps(valueItem, context.parentObject.direction), entry.value),
+    subobjects: r.map(
+      (valueItem: Record<string, any>) => rawObjectFromProps(valueItem, "vertical"),
+      entry.value
+    ),
     // direction: context.parentObject.direction,
-    direction: oppositeVHDirection(context.parentObject.direction),
+    direction: "horizontal",
   } as Field;
 };
 

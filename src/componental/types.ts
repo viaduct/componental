@@ -62,11 +62,10 @@ type BaseMiddlewareContext = {
   componentGenMiddlewares: ComponentGenMiddleware[];
 };
 type EntryTransMiddlewareContext = BaseMiddlewareContext & {};
-type FieldGenMiddlewareContext = {
-  parentObject: EntryObject;
-};
-type ComponentGenMiddlewareContext = {
-  generateComponent: (rawObject: EntryObject)=>React.FC;
+type FieldGenMiddlewareContext = BaseMiddlewareContext & {};
+type ComponentGenMiddlewareContext = BaseMiddlewareContext & {
+  generalComponent: React.FC<any>; // todo fix this.
+  // generateComponent: (rawObject: EntryObject)=>React.FC;
 };
 
 type EntryTransMiddleware = (entries: Entry[], context: EntryTransMiddlewareContext)=>Entry[];

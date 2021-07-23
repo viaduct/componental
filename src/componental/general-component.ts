@@ -1,4 +1,4 @@
-import {EntryObject, CreateGeneralComponent, ItemFromClient} from "./types";
+import {EntryObject, CreateGeneralComponent, ItemFromClient, ItemPayload} from "./types";
 import React from "react";
 // @ts-ignore
 import * as R from "ramda";
@@ -50,12 +50,10 @@ type GeneralComponentProps = {
   } | undefined,
   [key: string]: any;
 };
-const createItemFromClient = (componentName: string, props: GeneralComponentProps): ItemFromClient => {
+const createItemPayload = (props: GeneralComponentProps): ItemPayload => {
   const notNull = (a: any) => a != null;
 
-  const item: ItemFromClient = {
-    kind: "FROM_CLIENT",
-    componentName,
+  const item: ItemPayload = {
     props,
     entries: {
       ...r.omit(["style", "className", "_componental"], props),
